@@ -73,7 +73,12 @@ model = [ { 'type'   : DataType,
           },
 
           { 'type'     : View,
-            'label'    : u'Statistique',
+            'label'    : u'Statistiques',
+            'datatype' : u'Commande',
+          },
+
+          { 'type'     : View,
+            'label'    : u'Matériel et notes de frais',
             'datatype' : u'Commande',
           },
 
@@ -111,6 +116,12 @@ model = [ { 'type'   : DataType,
             'label' : u'Annuler commande',
             'view'  : u'Commande',
             'steps' : [ DelDataOperationStep(u'Annuler commande step 1'), ],
+          },
+
+          { 'type'  : Operation,
+            'label' : u'Achat de matériel',
+            'view'  : u'Frais',
+            'steps' : [ AddDataOperationStep(u'Achat de matériel step 1'), ],
           },
 
           { 'type'  : Operation,
