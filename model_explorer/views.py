@@ -27,7 +27,7 @@ from metamodel.datatype import DataType
 from metamodel.operation import Operation
 
 
-# TODO: Moved this form here
+# TODO: Move this from here
 couchdb = Server()
 try:
     database = couchdb['lego_erp_test']
