@@ -46,14 +46,77 @@ model = [ { 'type'   : DataType,
                          IntegerDataTypeField(u'Quantitée'), ],
           },
 
+          { 'type'   : DataType,
+            'label'  : u'Frais',
+            'fields' : [ StringDataTypeField(u'Titre'),
+                         FloatDataTypeField(u'Montant'), ],
+          },
+
           { 'type'     : View,
-            'label'    : u'Produits',
+            'label'    : u'Liste des produits',
             'datatype' : u'Produit',
           },
 
+          { 'type'     : View,
+            'label'    : u'Liste des clients',
+            'datatype' : u'Client',
+          },
+
+          { 'type'     : View,
+            'label'    : u'Liste des commandes',
+            'datatype' : u'Commande',
+          },
+
+          { 'type'     : View,
+            'label'    : u'Chiffre d\'affaires',
+            'datatype' : u'Commande',
+          },
+
+          { 'type'     : View,
+            'label'    : u'Statistique',
+            'datatype' : u'Commande',
+          },
+
           { 'type'  : Operation,
-            'label' : u'Ajouter produit',
+            'label' : u'Approvisionnement',
             'view'  : u'Produits',
-            'steps' : [ AddDataOperationStep(u'Ajouter produit step 1'), ],
-          }
+            'steps' : [ AddDataOperationStep(u'Approvisionnement step 1'), ],
+          },
+
+          { 'type'  : Operation,
+            'label' : u'Mettre à jour un produit',
+            'view'  : u'Produits',
+            'steps' : [ UpdateDataOperationStep(u'Mettre à jour un produit step 1'), ],
+          },
+
+          { 'type'  : Operation,
+            'label' : u'Nouveau client',
+            'view'  : u'Client',
+            'steps' : [ AddDataOperationStep(u'Nouveau client step 1'), ],
+          },
+
+          { 'type'  : Operation,
+            'label' : u'Mettre à jour client',
+            'view'  : u'Client',
+            'steps' : [ UpdateDataOperationStep(u'Mettre à jour client'), ],
+          },
+
+          { 'type'  : Operation,
+            'label' : u'Nouvelle commande',
+            'view'  : u'Commande',
+            'steps' : [ AddDataOperationStep(u'Nouvelle commande step 1'), ],
+          },
+
+          { 'type'  : Operation,
+            'label' : u'Annuler commande',
+            'view'  : u'Commande',
+            'steps' : [ DelDataOperationStep(u'Annuler commande step 1'), ],
+          },
+
+          { 'type'  : Operation,
+            'label' : u'Saisir note de frais',
+            'view'  : u'Frais',
+            'steps' : [ AddDataOperationStep(u'Saisir note de frais step 1'), ],
+          },
+
         ]
