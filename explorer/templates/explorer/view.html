@@ -47,57 +47,67 @@
 
     <div id="container" class="">
       <div id="content" class="with_sidebar">
-	<h1>{{ view }}</h1> 
+
+        <h1>{{ view }}</h1> 
  
-<!--<p class="hint"></p> -->
- 
-<div class="clear"></div> 
-<div id="merge-requests-status-chooser"> 
-  <strong>Filtrer le listing:</strong> 
-  <ul class="horizontal"><li><strong>Open:</strong></li><li><a href="/legoerp/legoerp/merge_requests?status=Open">Open</a></li></ul><ul class="horizontal"><li><strong>Closed:</strong></li><li><a href="/legoerp/legoerp/merge_requests?status=Closed">Closed</a></li></ul><ul class="horizontal"></ul></div>  <div class="box w-750 round"> 
-    <!--<p> 
-      <em>No merge requests yet</em> 
-    </p> -->
-</div> 
-  <table class="listing"> 
-  <thead>
-  	{% for field in datatype.fields %}
-    <th>{{ field }}</th> 
-	{% endfor %}
-    <th></th> 
-  </thead> 
-<tbody>
-	{% for row in contents %}
-      <tr class="{% cycle 'odd' 'even' %}" id="content_{{ datatype.id }}">
-        {% for value in row %}
-		  {% if not forloop.last %}
-          <td>
-            {{ value }}
-          </td>
-		  {% else %}
-		  <td width=10>
-		    <div class="button"><a href="/datatype/{{ view.id }}/{{ value }}">Details</a></div>
-		  </td>
-		  {% endif %}
-		{% endfor %}
-		
-        <!--<td style="color:#808000">-->
-      </tr>
-	{% endfor %}
-</table> 
- 
+        <div class="clear"></div> 
+        <div id="merge-requests-status-chooser"> 
+          <strong>Filtrer le listing:</strong> 
+          <ul class="horizontal">
+          	<li><strong>Open:</strong></li>
+			<li><a href="/legoerp/legoerp/merge_requests?status=Open">Open</a></li>
+		  </ul>
+		  <ul class="horizontal">
+		  	<li><strong>Closed:</strong></li>
+			<li><a href="/legoerp/legoerp/merge_requests?status=Closed">Closed</a></li>
+		  </ul>
+		  <ul class="horizontal"></ul>
+        </div>
+        <!--<div class="box w-750 round"> 
+	      <p> 
+	        <em>No merge requests yet</em> 
+	      </p> 
+        </div>-->
+
+        <div id=listing>
+        <table class="listing"> 
+        <thead>
+  	      {% for field in datatype.fields %}
+          <th>{{ field }}</th> 
+	      {% endfor %}
+          <th><!-- 'details' button --></th> 
+        </thead> 
+        <tbody>
+	      {% for row in contents %}
+          <tr class="{% cycle 'odd' 'even' %}" id="content_{{ datatype.id }}">
+            {% for value in row %}
+		      {% if not forloop.last %}
+              <td>
+              {{ value }}
+              </td>
+		      {% else %}
+		      <td width=10>
+		      <div class="button"><a href="/datatype/{{ view.id }}/{{ value }}">Details</a></div>
+		      </td>
+		      {% endif %}
+		    {% endfor %}
+          <!--<td style="color:#808000">-->
+          </tr>
+	      {% endfor %}
+		</tbody>
+        </table>
+		</div>
 
       </div>
-<div id="sidebar"> 
- 
-    <ul class="links navigation">
-      {% for operation in operations %}
-      <li class="update_project"><a href="/operation/{{ operation.id }}">{{ operation }}</a></li>
-	  {% endfor %}
-    </ul>
-    </div> 
+	  <div id="sidebar"> 
+        <ul class="links navigation">
+          {% for operation in operations %}
+          <li class="update_project"><a href="/operation/{{ operation.id }}">{{ operation }}</a></li>
+	      {% endfor %}
+        </ul>
+      </div> 
     </div>
-
+	
     <div id="footer">
       <div id="footer-links">
         <h3>LegoERP</h3>
@@ -118,29 +128,8 @@
       </div>
       <div class="clear"></div>
     </div>
+  
   </div>
 
-
-<!--
-<h1>CouchDB in Django</h1>
-
-<form method="post" action=".">
-<table>
-  <tr>
-    <td> Title for new document </td>
-    <td><input type="text" name="title"></td>
-    <td><input type="submit"></td>
-  </tr>
-</table>
-</form>
-<hr>
-<ol>
-  {% for row in rows %}
-  <li>
-  <a id="title" href="/doc/{{ row }}/">{{ row }}</a>
-  </li>
-  {% endfor %}
-</ol>
--->
 </body>
 </html>

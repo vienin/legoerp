@@ -38,13 +38,16 @@ class DataTypeForm(forms.Form):
             # Beurk ?
             if (isinstance(field, StringDataTypeField) or 
                 isinstance(field, AdressDataTypeField)):
-                self.fields[field.id] = forms.CharField(label=field.label, initial=initial.get(field.label))
+                self.fields[field.id] = forms.CharField(label=field.label,
+                                                        initial=initial.get(field.id))
 
             elif isinstance(field, FloatDataTypeField):
-                self.fields[field.id] = forms.FloatField(label=field.label, initial=initial.get(field.label))
+                self.fields[field.id] = forms.FloatField(label=field.label,
+                                                         initial=initial.get(field.id))
 
             elif isinstance(field, IntegerDataTypeField):
-                self.fields[field.id] = forms.IntegerField(label=field.label, initial=initial.get(field.label))
+                self.fields[field.id] = forms.IntegerField(label=field.label,
+                                                           initial=initial.get(field.id))
 
             #self.fields[field.id].widget.attrs['disabled'] = 'disabled'
 
@@ -53,12 +56,12 @@ class DataType(MetaLegoDocument):
     Description of a database document type.
     """
 
-    by_label = ViewField(design='datatype',
-                         wrapper=None,
-                         map_fun='''\
+    with_fields = ViewField(design='datatype',
+                            wrapper=None,
+                            map_fun='''\
                    function(doc) {
                        if (doc.metatype == 'DataType') {
-                           emit([doc.label, 0], doc);
+                           emit([doc._id, 0], doc);
                        } else if (doc.metatype.indexOf('DataTypeField') > -1) {
                            emit([doc.datatype, doc.rank], doc);
                        }
@@ -77,23 +80,23 @@ class DataType(MetaLegoDocument):
             rank = 1
             for field in fields:
                 field.rank = rank
-                field.datatype = self.label
+                field.datatype = self.id
                 field.store(database)
                 self.fields.append(field)
                 rank += 1
 
             # The question ! When synchronize couchdb views ?
-            self.by_label.sync(database)
+            self.with_fields.sync(database)
             self.by_id.sync(database)
 
-    def find(self, database, label=False, fields=False):
+    def find(self, database, id=False, fields=False):
         document = None
         options  = {}
-        if label:
-            if fields:  options = { 'startkey' : [label], 'endkey' : [label, {}] }
-            else:       options = { 'key' : [label, 0] }
+        if id:
+            if fields:  options = { 'startkey' : [id], 'endkey' : [id, {}] }
+            else:       options = { 'key' : [id, 0] }
 
-        for row in self.by_label(database, **options):
+        for row in self.with_fields(database, **options):
             if row.value['metatype'] in ('DataType'):
                 if document:
                     yield document
@@ -107,10 +110,10 @@ class DataType(MetaLegoDocument):
             yield document
 
     def build(self, database, values):
-        model_document = LegoDocument(self.label)
+        model_document = LegoDocument(self.id)
         for field in self.fields:
             if field.id in values.keys():
-                model_document._data[field.label] = values[field.id]
+                model_document._data[field.id] = values[field.id]
 
         model_document.store(database)
         

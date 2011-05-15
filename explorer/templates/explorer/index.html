@@ -45,6 +45,9 @@
 
     <div id="container" class="">
       <div id="content" class="">
+        <h2 class="content-header">
+        Hello <a href="/~vienin">vienin</a>!
+        </h2>
 
         <div id="left">
 
@@ -52,8 +55,8 @@
             <div class="pull-box-header"><h3>Explore</h3></div>
             <div class="pull-box-content">
               <ul class="events inline">
-              	{% for view in views %}
-  	            <div class="button-index"><a href="/view/{{ view.id }}/">{{ view }}</a></div>
+              	{% for viewid in views.keys %}
+  	            <div class="button-index"><a href="/view/{{ viewid }}/">{{ views|hash:viewid }}</a></div>
                 {% endfor %}
               </ul>
             </div>
@@ -62,12 +65,12 @@
 
         <div id="right">
 
-          {% for view in operations.keys %}
+          {% for viewid in operations.keys %}
           <div class="pull-box-container pull-box-510">
-            <div class="pull-box-header"><h3>{{ view }}</h3></div>
+            <div class="pull-box-header"><h3>{{ views|hash:viewid }}</h3></div>
             <div class="pull-box-content">
 
-              {% for operation in operations|hash:view %}
+              {% for operation in operations|hash:viewid %}
               <div class="button-index" id="new-project-button"><a href="/operation/{{ operation.id }}" class="">{{ operation }}</a></div>
               {% endfor %}
 
@@ -102,27 +105,5 @@
     </div>
   </div>
 
-
-<!--
-<h1>CouchDB in Django</h1>
-
-<form method="post" action=".">
-<table>
-  <tr>
-    <td> Title for new document </td>
-    <td><input type="text" name="title"></td>
-    <td><input type="submit"></td>
-  </tr>
-</table>
-</form>
-<hr>
-<ol>
-  {% for row in rows %}
-  <li>
-  <a id="title" href="/doc/{{ row }}/">{{ row }}</a>
-  </li>
-  {% endfor %}
-</ol>
--->
 </body>
 </html>

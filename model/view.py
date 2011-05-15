@@ -28,11 +28,11 @@ class View(MetaLegoDocument):
     datatype = TextField()
     #datafields = {}
 
-    by_label = ViewField(design='view',
-                         map_fun='''\
+    by_datatype = ViewField(design='view',
+                            map_fun='''\
                    function(doc) {
                        if (doc.metatype == 'View') {
-                           emit(doc.label, doc);
+                           emit(doc.datatype, doc);
                        }
                    }''')
 
@@ -44,15 +44,15 @@ class View(MetaLegoDocument):
             self.datatype = datatype
             self.store(database)
 
-            self.by_label.sync(database)
+            self.by_datatype.sync(database)
 
-    def find(self, database, label=False):
+    def find(self, database, id=False):
         document = None
         options  = {}
         
-        if label:
-            options = { 'key' : label }
+        if id:
+            options = { 'key' : id }
 
-        for doc in self.by_label(database, **options):
+        for doc in self.by_id(database, **options):
             if doc.metatype in ('View'):
                 yield doc

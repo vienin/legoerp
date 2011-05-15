@@ -25,10 +25,12 @@ class MetaLegoDocument(Document):
     metatype = TextField()
     label    = TextField()
 
-    by_id = ViewField(design='datatype',
+    by_id = ViewField(design='meta',
                          map_fun='''\
                    function(doc) {
-                       emit(doc._id, doc);
+                       if (doc.metatype) {
+                           emit(doc._id, doc);
+                       }
                    }''')
 
     def __init__(self):

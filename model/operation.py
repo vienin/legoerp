@@ -37,12 +37,12 @@ class Operation(MetaLegoDocument):
                        }
                    }''')
 
-    by_label = ViewField(design='operation',
+    with_steps = ViewField(design='operation',
                          wrapper=None,
                          map_fun='''\
                    function(doc) {
                        if (doc.metatype == 'Operation') {
-                           emit([doc.label, 0], doc);
+                           emit([doc._id, 0], doc);
                        } else if (doc.metatype.indexOf('OperationStep') > -1) {
                            emit([doc.operation, doc.rank], doc);
                        }
@@ -62,22 +62,22 @@ class Operation(MetaLegoDocument):
             rank = 1
             for step in steps:
                 step.rank = rank
-                step.operation = self.label
+                step.operation = self.id
                 step.store(database)
                 self.steps.append(step)
                 rank += 1
-            
-            self.by_label.sync(database)
+
+            self.with_steps.sync(database)
             self.by_view.sync(database)
 
-    def find(self, database, label=False, steps=False):
+    def find(self, database, id=False, steps=False):
         document = None
         options  = {}
-        if label:
-            if steps:   options = { 'startkey' : [label], 'endkey' : [label, {}] }
-            else:       options = { 'key' : [label, 0] }
+        if id:
+            if steps:   options = { 'startkey' : [ id ], 'endkey' : [ id, {} ] }
+            else:       options = { 'key' : [ id, 0 ] }
 
-        for row in self.by_label(database, **options):
+        for row in self.with_steps(database, **options):
             if row.value['metatype'] in ('Operation'):
                 if document:
                     yield document
@@ -112,7 +112,7 @@ class OperationStep(MetaLegoDocument):
     operation = TextField()
     rank      = IntegerField()
 
-    def __init__(self, label=None):
+    def __init__(self, label='None'):
         super(OperationStep, self).__init__()
 
         if label:   self.label = label

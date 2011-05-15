@@ -34,7 +34,8 @@ try:
     database = couchdb['lego_erp_test']
 except:
     database = couchdb.create('lego_erp_test')
-    
+
+if not len(couchdb['lego_erp_test']):
     from model.load import load_model
     from examples import simplecrm
 
@@ -47,19 +48,20 @@ def index(request):
     '''
 
     # Get all views
-    displayed_views = View().find(database)
+    displayed_views = {}
+    for view in View().find(database):
+        displayed_views[view.id] = view
 
     # Get all operations indexed by view
     operations = {}
     for operation in Operation().find_by_view(database):
-        
+        if not operations.has_key(operation.view):
+            operations[operation.view] = []
+            
         # Arg...
-        for fullop in operation.find(database, label=operation.label, steps=True):
+        for fullop in operation.find(database, id=operation.id, steps=True):
             if fullop.at_list_level():
-                if not operations.has_key(operation.view):
-                    operations[operation.view] = []
-
-                    operations[operation.view].append(operation)
+                operations[operation.view].append(operation)
 
     return render_to_response('explorer/index.html', { 'views'      : displayed_views,
                                                        'operations' : operations })
@@ -72,18 +74,18 @@ def operation(request, id):
     operation = Operation().find_by_id(database, id)
     
     fullop = None
-    for first in Operation().find(database, label=operation.label, steps=True):
+    for first in Operation().find(database, id=operation.id, steps=True):
         fullop = first
         break
 
     viewid = None
     datatype = None
-    for first in View().find(database, label=operation.view):
+    for first in View().find(database, id=operation.view):
         datatype = first.datatype
         viewid = first.id
         break
     
-    for first in DataType().find(database, label=datatype, fields=True):
+    for first in DataType().find(database, id=datatype, fields=True):
         datatype = first
         break
 
@@ -109,23 +111,23 @@ def view(request, id):
     view = View().find_by_id(database, id)
 
     datatype = None
-    for first in DataType().find(database, label=view.datatype, fields=True):
+    for first in DataType().find(database, id=view.datatype, fields=True):
         datatype = first
         break
 
     contents = []
-    for content in LegoDocument().contents(database, datatype.label):
+    for content in LegoDocument().contents(database, datatype.id):
         values = []
         for field in datatype.fields:
-            values.append(content._data.get(field.label))
+            values.append(content._data.get(field.id))
         values.append(content.id)
         contents.append(values)
 
     # Get the view operations
     operations = []
-    for operation in Operation().find_by_view(database, view=view.label):
+    for operation in Operation().find_by_view(database, view=view.id):
         # Arg...
-        for fullop in operation.find(database, label=operation.label, steps=True):
+        for fullop in operation.find(database, id=operation.id, steps=True):
             if fullop.at_list_level():
                 operations.append(operation)
 
@@ -142,15 +144,15 @@ def datatype(request, viewid, id, operationid=False):
     view = View().find_by_id(database, viewid)
 
     fulltype = None
-    for first in DataType().find(database, label=view.datatype, fields=True):
+    for first in DataType().find(database, id=view.datatype, fields=True):
         fulltype = first
         break
 
     values = []
     model_doc = None
-    for content in LegoDocument().contents(database, fulltype.label, id):
+    for content in LegoDocument().contents(database, fulltype.id, id):
         for field in fulltype.fields:
-            values.append(content._data.get(field.label))
+            values.append(content._data.get(field.id))
         model_doc = content
         break
 
@@ -163,7 +165,7 @@ def datatype(request, viewid, id, operationid=False):
         if form.is_valid(): # All validation rules pass
             for field in fulltype.fields:
                 if field.id in form.cleaned_data.keys():
-                    model_doc._data[field.label] = form.cleaned_data[field.id]
+                    model_doc._data[field.id] = form.cleaned_data[field.id]
 
             database.save(model_doc._data)
 
@@ -172,7 +174,7 @@ def datatype(request, viewid, id, operationid=False):
         form = DataTypeForm(datatype=fulltype, initial=content._data)
 
     # Get the view operations
-    operations = Operation().find_by_view(database, view=view.label)
+    operations = Operation().find_by_view(database, view=view.id)
 
     return render_to_response('explorer/datatype.html', { 'cid'        : content.id,
                                                           'viewid'     : viewid,

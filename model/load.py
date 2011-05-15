@@ -17,10 +17,22 @@
 #
 # File: load.py
 
+from model.datatype import DataType
+from model.view import View
+from model.operation import Operation
+
 
 def load_model(database, model):
-    for document in model:
-        metatype = document['metatype']
-        del document['metatype']
+    for metatype in [ DataType, View, Operation ]: #model:
+        for document in model[metatype]:
+            for field in model[metatype][document]:
+                # If field is a metatype reference,
+                # replace the tuple by the metatype instance id.
+                #print "-- > " + str(model[metatype][document][field])
+                if isinstance(model[metatype][document][field], tuple):
+                    type, key = model[metatype][document][field]
+                    model[metatype][document][field] = model[type][key].id
 
-        metatype(database=database, **document)
+            # Replace the model dictionary by the created database document
+            model[metatype][document] = metatype(database=database,
+                                                 **model[metatype][document])
