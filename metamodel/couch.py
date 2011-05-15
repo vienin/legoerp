@@ -20,14 +20,56 @@
 from couchdb.mapping import *
 
 
-class LegoDocument(Document):
+class MetaLegoDocument(Document):
 
-    type  = TextField()
-    label = TextField()
+    metatype = TextField()
+    label    = TextField()
+
+    by_id = ViewField(design='datatype',
+                         map_fun='''\
+                   function(doc) {
+                       emit(doc._id, doc);
+                   }''')
 
     def __init__(self):
         Document.__init__(self)
-        self.type = self.__class__.__name__
+        self.metatype = self.__class__.__name__
 
     def __repr__(self):
         return self.label.encode('utf-8')
+
+    def find_by_id(self, database, id):
+        document = None
+        for doc in self.by_id(database, key=id):
+            document = doc
+            break
+        return document
+
+class LegoDocument(Document):
+
+    type = TextField()
+
+    by_type = ViewField(design='contents',
+                        map_fun='''\
+                   function(doc) {
+                       if (doc.type) {
+                           emit([doc.type, doc._id], doc);
+                       }
+                   }''')
+
+    def __init__(self, type=None):
+        Document.__init__(self)
+
+        self.type = type
+
+    def __repr__(self):
+        return self.type.encode('utf-8')
+
+    def contents(self, database, type, id=None):
+        self.by_type.sync(database)
+
+        if id:  options = { 'key' : [type, id] }
+        else:   options = { 'startkey' : [type], 'endkey' : [type, {}] }
+
+        for content in self.by_type(database, **options):
+            yield content

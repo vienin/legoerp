@@ -7,10 +7,11 @@
 <script type="text/javascript" src="/media/jquery-ui/development-bundle/ui/jquery.ui.button.js"></script>
 <script src="/media/gitorious.js?1303809124" type="text/javascript"></script>
 
-{% load filters %}
-
 <link type="text/css" href="/media/jquery-ui/development-bundle/themes/ui-lightness/jquery.ui.all.css" rel="stylesheet" />
 <link href="/media/css/gitorious.css?1303809124" media="screen" rel="stylesheet" type="text/css" />
+
+{% load filters %}
+
 </head>
 
 <body id="site">
@@ -30,6 +31,7 @@
     <div id="top-bar">
       <ul id="breadcrumbs">
       	<li class="project"><a href="/">LegoERP</a></li>
+        <li class="repository"><a href="/view/{{ viewid }}">{{ datatype }}</a></li>
 	  </ul> 
       <div id="searchbox">
 
@@ -44,39 +46,57 @@
     </div>
 
     <div id="container" class="">
-      <div id="content" class="">
+      <div id="content" class="with_sidebar">  
+	    <h1>{{ datatype }}: Toto</h1>
 
-        <div id="left">
+		{% if edit %}
+          {% if form.errors %}
+		  <div class="errorExplanation" id="errorExplanation">
+		    <h2>{{ form.errors|length}} errors prohibited this operation from being processed</h2>
+		    <p>There were problems with the following fields:</p>
+		    <ul>
+		      {% for field in form %}
+			    {% for e in field.errors %}
+		  	    <li>'{{ field.label_tag }}', {{ e }}</li>
+			    {% endfor %}
+			  {% endfor %}
+		    </ul>
+		  </div>
+		  {% endif %}
 
-          <div class="pull-box-container pull-box-510">
-            <div class="pull-box-header"><h3>Explore</h3></div>
-            <div class="pull-box-content">
-              <ul class="events inline">
-              	{% for view in views %}
-  	            <div class="button-index"><a href="/view/{{ view.id }}/">{{ view }}</a></div>
-                {% endfor %}
-              </ul>
-            </div>
-          </div>
-        </div>
+		{% endif %}
+		  <form action="/datatype/{{ viewid }}/{{ cid }}/" class="new_project" id="new_project" method="post">
+          <ul class="form"> 
+            <fieldset>
+	          {% for field in form %}
+	          <li>
+		        {% if field.errors %}<div class="fieldWithErrors">{% endif %}
+			      {{ field.label_tag }}
+		        {% if field.errors %}</div>{% endif %}
+			    <div>
+		        {% if field.errors %}<div class="fieldWithErrors">{% endif %}
+			      {% if edit %} {{ field }} {% else %} {{ values|hash:forloop.counter0 }} {% endif %}
+			    {% if field.errors %}</div>{% endif %}
+			    </div>
+		      </li>
+	          {% endfor %}
+            </fieldset>
+          </ul>
 
-        <div id="right">
+		{% if edit %}
+		  <fieldset class="submit"> 
+            <input id="project_submit" name="commit" type="submit" value="Valider" />
+          </fieldset> 
+		{% endif %}
+        </form>
+      </div>
 
-          {% for view in operations.keys %}
-          <div class="pull-box-container pull-box-510">
-            <div class="pull-box-header"><h3>{{ view }}</h3></div>
-            <div class="pull-box-content">
-
-              {% for operation in operations|hash:view %}
-              <div class="button-index" id="new-project-button"><a href="/operation/{{ operation.id }}" class="">{{ operation }}</a></div>
-              {% endfor %}
-
-              <div class="clear"></div>
-            </div>
-          </div>
-          {% endfor %}
-
-        </div>
+      <div id="sidebar"> 
+ 	    <ul class="links navigation">
+         {% for operation in operations %}
+         <li class="update_project"><a href="/datatype/{{ viewid }}/{{ cid }}/{{ operation.id }}/">{{ operation }}</a></li>
+	     {% endfor %}
+        </ul>
       </div>
     </div>
 

@@ -20,7 +20,7 @@
 from couch import *
 
 
-class View(LegoDocument):
+class View(MetaLegoDocument):
     """
     Description of a view database contents.
     """
@@ -31,13 +31,13 @@ class View(LegoDocument):
     by_label = ViewField(design='view',
                          map_fun='''\
                    function(doc) {
-                       if (doc.type == 'View') {
+                       if (doc.metatype == 'View') {
                            emit(doc.label, doc);
                        }
                    }''')
 
     def __init__(self, database=None, label=None, datatype=None):
-        LegoDocument.__init__(self)
+        super(View, self).__init__()
         
         if database:
             self.label    = label
@@ -54,5 +54,5 @@ class View(LegoDocument):
             options = { 'key' : label }
 
         for doc in self.by_label(database, **options):
-            if doc.type in ('View'):
+            if doc.metatype in ('View'):
                 yield doc

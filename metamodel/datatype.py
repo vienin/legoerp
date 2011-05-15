@@ -19,8 +19,36 @@
 
 from couch import *
 
+from django import forms
 
-class DataType(LegoDocument):
+
+class DataTypeForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        datatype = kwargs.pop('datatype')
+        
+        if kwargs.has_key('initial'):
+            initial = kwargs.pop('initial')
+        else:
+            initial = {}
+
+        forms.Form.__init__(self, *args, **kwargs)
+
+        for field in datatype.fields:
+            # Beurk ?
+            if (isinstance(field, StringDataTypeField) or 
+                isinstance(field, AdressDataTypeField)):
+                self.fields[field.id] = forms.CharField(label=field.label, initial=initial.get(field.label))
+
+            elif isinstance(field, FloatDataTypeField):
+                self.fields[field.id] = forms.FloatField(label=field.label, initial=initial.get(field.label))
+
+            elif isinstance(field, IntegerDataTypeField):
+                self.fields[field.id] = forms.IntegerField(label=field.label, initial=initial.get(field.label))
+
+            #self.fields[field.id].widget.attrs['disabled'] = 'disabled'
+
+class DataType(MetaLegoDocument):
     """
     Description of a database document type.
     """
@@ -29,9 +57,9 @@ class DataType(LegoDocument):
                          wrapper=None,
                          map_fun='''\
                    function(doc) {
-                       if (doc.type == 'DataType') {
+                       if (doc.metatype == 'DataType') {
                            emit([doc.label, 0], doc);
-                       } else if (doc.type.indexOf('DataTypeField') > -1) {
+                       } else if (doc.metatype.indexOf('DataTypeField') > -1) {
                            emit([doc.datatype, doc.rank], doc);
                        }
                    }''')
@@ -39,7 +67,7 @@ class DataType(LegoDocument):
     fields = None
 
     def __init__(self, database=None, label=None, fields=[]):
-        LegoDocument.__init__(self)
+        super(DataType, self).__init__()
 
         self.fields = []
         if database:
@@ -53,8 +81,10 @@ class DataType(LegoDocument):
                 field.store(database)
                 self.fields.append(field)
                 rank += 1
-            
+
+            # The question ! When synchronize couchdb views ?
             self.by_label.sync(database)
+            self.by_id.sync(database)
 
     def find(self, database, label=False, fields=False):
         document = None
@@ -64,19 +94,28 @@ class DataType(LegoDocument):
             else:       options = { 'key' : [label, 0] }
 
         for row in self.by_label(database, **options):
-            if row.value['type'] in ('DataType'):
+            if row.value['metatype'] in ('DataType'):
                 if document:
                     yield document
 
                 document = DataType.wrap(row.value)
 
-            elif 'DataTypeField' in row.value['type']:
-                document.fields.append(globals()[row.value['type']].wrap(row.value))
+            elif 'DataTypeField' in row.value['metatype']:
+                document.fields.append(globals()[row.value['metatype']].wrap(row.value))
 
         if document:
             yield document
 
-class DataTypeField(LegoDocument):
+    def build(self, database, values):
+        model_document = LegoDocument(self.label)
+        for field in self.fields:
+            if field.id in values.keys():
+                model_document._data[field.label] = values[field.id]
+
+        model_document.store(database)
+        
+
+class DataTypeField(MetaLegoDocument):
     """
     Field of a database document type.
     """
@@ -86,7 +125,7 @@ class DataTypeField(LegoDocument):
     #default  = None
 
     def __init__(self, label=None, default=None):
-        LegoDocument.__init__(self)
+        super(DataTypeField, self).__init__()
 
         if label:   self.label = label
         if default: self.default = default
@@ -95,25 +134,25 @@ class DataTypeField(LegoDocument):
 class AdressDataTypeField(DataTypeField):
 
     def __init__(self, label=None, default=None):
-        DataTypeField.__init__(self, label, default)
+        super(AdressDataTypeField, self).__init__(label=label, default=default)
 
 
 class StringDataTypeField(DataTypeField):
 
     def __init__(self, label=None, default=None):
-        DataTypeField.__init__(self, label, default)
+        super(StringDataTypeField, self).__init__(label=label, default=default)
 
 
 class FloatDataTypeField(DataTypeField):
 
     def __init__(self, label=None, default=None):
-        DataTypeField.__init__(self, label, default)
+        super(FloatDataTypeField, self).__init__(label=label, default=default)
 
 
 class IntegerDataTypeField(DataTypeField):
 
     def __init__(self, label=None, default=None):
-        DataTypeField.__init__(self, label, default)
+        super(IntegerDataTypeField, self).__init__(label=label, default=default)
 
 
 class RelationDataTypeField(DataTypeField):
@@ -121,7 +160,7 @@ class RelationDataTypeField(DataTypeField):
     relation = TextField()
 
     def __init__(self, label=None, relation=None):
-        DataTypeField.__init__(self, label)
+        super(RelationDataTypeField, self).__init__(label=label)
         if relation:
             self.relation = relation
 

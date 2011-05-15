@@ -20,7 +20,7 @@
 from couch import *
 
 
-class Operation(LegoDocument):
+class Operation(MetaLegoDocument):
     """
     Description of an operation on the database.
     Typically, an operation is a set of updates
@@ -32,7 +32,7 @@ class Operation(LegoDocument):
     by_view  = ViewField(design='operation',
                          map_fun='''\
                    function(doc) {
-                       if (doc.type == 'Operation') {
+                       if (doc.metatype == 'Operation') {
                            emit(doc.view, doc);
                        }
                    }''')
@@ -41,9 +41,9 @@ class Operation(LegoDocument):
                          wrapper=None,
                          map_fun='''\
                    function(doc) {
-                       if (doc.type == 'Operation') {
+                       if (doc.metatype == 'Operation') {
                            emit([doc.label, 0], doc);
-                       } else if (doc.type.indexOf('OperationStep') > -1) {
+                       } else if (doc.metatype.indexOf('OperationStep') > -1) {
                            emit([doc.operation, doc.rank], doc);
                        }
                    }''')
@@ -51,7 +51,7 @@ class Operation(LegoDocument):
     steps = None
 
     def __init__(self, database=None, label=None, view=None, steps=[]):
-        LegoDocument.__init__(self)
+        super(Operation, self).__init__()
 
         self.steps = []
         if database:
@@ -78,14 +78,14 @@ class Operation(LegoDocument):
             else:       options = { 'key' : [label, 0] }
 
         for row in self.by_label(database, **options):
-            if row.value['type'] in ('Operation'):
+            if row.value['metatype'] in ('Operation'):
                 if document:
                     yield document
 
-                document = DataType.wrap(row.value)
+                document = Operation.wrap(row.value)
 
-            elif 'OperationStep' in row.value['type']:
-                document.steps.append(globals()[row.value['type']].wrap(row.value))
+            elif 'OperationStep' in row.value['metatype']:
+                document.steps.append(globals()[row.value['metatype']].wrap(row.value))
 
         if document:
             yield document
@@ -98,7 +98,13 @@ class Operation(LegoDocument):
         for doc in self.by_view(database, **options):
             yield doc
 
-class OperationStep(LegoDocument):
+    def at_list_level(self):
+        for step in self.steps:
+            if isinstance(step, AddDataOperationStep):
+                return True
+        return False
+
+class OperationStep(MetaLegoDocument):
     """
     Single update on databse documents.
     """
@@ -107,7 +113,7 @@ class OperationStep(LegoDocument):
     rank      = IntegerField()
 
     def __init__(self, label=None):
-        LegoDocument.__init__(self)
+        super(OperationStep, self).__init__()
 
         if label:   self.label = label
 
@@ -117,18 +123,18 @@ class UpdateDataOperationStep(OperationStep):
     values = {}
 
     def __init__(self, label=None, fields=False, values=False):
-        OperationStep.__init__(self, label)
+        super(UpdateDataOperationStep, self).__init__(label=label)
         self.fields = fields
         self.values = values
 
-        
+
 class AddDataOperationStep(OperationStep):
 
     def __init__(self, label=None):
-        OperationStep.__init__(self, label)
+        super(AddDataOperationStep, self).__init__(label=label)
 
         
 class DelDataOperationStep(OperationStep):
 
     def __init__(self, label=None):
-        OperationStep.__init__(self, label)
+        super(DelDataOperationStep, self).__init__(label=label)

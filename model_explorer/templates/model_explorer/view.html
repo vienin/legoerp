@@ -29,7 +29,9 @@
 
     <div id="top-bar">
       <ul id="breadcrumbs">
-      	<li class="project"><a href="/">LegoERP</a></li>
+      	<li class="project"><a href="/">LegoERP</a></li> 
+        <li class="repository"><a href="">{{ datatype }}</a></li>
+		<li class="tree"><a href="">{{ view }}</a></li>
 	  </ul> 
       <div id="searchbox">
 
@@ -44,40 +46,56 @@
     </div>
 
     <div id="container" class="">
-      <div id="content" class="">
+      <div id="content" class="with_sidebar">
+	<h1>{{ view }}</h1> 
+ 
+<!--<p class="hint"></p> -->
+ 
+<div class="clear"></div> 
+<div id="merge-requests-status-chooser"> 
+  <strong>Filtrer le listing:</strong> 
+  <ul class="horizontal"><li><strong>Open:</strong></li><li><a href="/legoerp/legoerp/merge_requests?status=Open">Open</a></li></ul><ul class="horizontal"><li><strong>Closed:</strong></li><li><a href="/legoerp/legoerp/merge_requests?status=Closed">Closed</a></li></ul><ul class="horizontal"></ul></div>  <div class="box w-750 round"> 
+    <!--<p> 
+      <em>No merge requests yet</em> 
+    </p> -->
+</div> 
+  <table class="listing"> 
+  <thead>
+  	{% for field in datatype.fields %}
+    <th>{{ field }}</th> 
+	{% endfor %}
+    <th></th> 
+  </thead> 
+<tbody>
+	{% for row in contents %}
+      <tr class="{% cycle 'odd' 'even' %}" id="content_{{ datatype.id }}">
+        {% for value in row %}
+		  {% if not forloop.last %}
+          <td>
+            {{ value }}
+          </td>
+		  {% else %}
+		  <td width=10>
+		    <div class="button"><a href="/datatype/{{ view.id }}/{{ value }}">Details</a></div>
+		  </td>
+		  {% endif %}
+		{% endfor %}
+		
+        <!--<td style="color:#808000">-->
+      </tr>
+	{% endfor %}
+</table> 
+ 
 
-        <div id="left">
-
-          <div class="pull-box-container pull-box-510">
-            <div class="pull-box-header"><h3>Explore</h3></div>
-            <div class="pull-box-content">
-              <ul class="events inline">
-              	{% for view in views %}
-  	            <div class="button-index"><a href="/view/{{ view.id }}/">{{ view }}</a></div>
-                {% endfor %}
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div id="right">
-
-          {% for view in operations.keys %}
-          <div class="pull-box-container pull-box-510">
-            <div class="pull-box-header"><h3>{{ view }}</h3></div>
-            <div class="pull-box-content">
-
-              {% for operation in operations|hash:view %}
-              <div class="button-index" id="new-project-button"><a href="/operation/{{ operation.id }}" class="">{{ operation }}</a></div>
-              {% endfor %}
-
-              <div class="clear"></div>
-            </div>
-          </div>
-          {% endfor %}
-
-        </div>
       </div>
+<div id="sidebar"> 
+ 
+    <ul class="links navigation">
+      {% for operation in operations %}
+      <li class="update_project"><a href="/operation/{{ operation.id }}">{{ operation }}</a></li>
+	  {% endfor %}
+    </ul>
+    </div> 
     </div>
 
     <div id="footer">

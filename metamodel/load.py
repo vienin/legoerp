@@ -20,7 +20,7 @@
 
 def load_model(database, model):
     for document in model:
-        type = document['type']
-        del document['type']
+        metatype = document['metatype']
+        del document['metatype']
 
-        type(database=database, **document)
+        metatype(database=database, **document)
