@@ -22,11 +22,11 @@ from django.shortcuts import render_to_response
 
 from couchdb.client import Server
 
-from metamodel.view import View
-from metamodel.datatype import DataType, DataTypeForm
-from metamodel.operation import Operation
+from model.view import View
+from model.datatype import DataType, DataTypeForm
+from model.operation import Operation
 
-from metamodel.couch import LegoDocument
+from model.couch import LegoDocument
 
 # TODO: Move this from here
 couchdb = Server()
@@ -35,7 +35,7 @@ try:
 except:
     database = couchdb.create('lego_erp_test')
     
-    from metamodel.load import load_model
+    from model.load import load_model
     from examples import simplecrm
 
     load_model(database, simplecrm.model)
@@ -61,8 +61,8 @@ def index(request):
 
                     operations[operation.view].append(operation)
 
-    return render_to_response('model_explorer/index.html', { 'views' : displayed_views,
-                                                             'operations' : operations })
+    return render_to_response('explorer/index.html', { 'views'      : displayed_views,
+                                                       'operations' : operations })
 
 def operation(request, id):
     '''
@@ -96,10 +96,10 @@ def operation(request, id):
     else:
         form = DataTypeForm(datatype=datatype)
 
-    return render_to_response('model_explorer/operation.html', { 'form': form,
-                                                                 'viewid' : viewid,
-                                                                 'operation' : fullop,
-                                                                 'datatype'  : datatype })
+    return render_to_response('explorer/operation.html', { 'form'      : form,
+                                                           'viewid'    : viewid,
+                                                           'operation' : fullop,
+                                                           'datatype'  : datatype })
 
 def view(request, id):
     '''
@@ -129,10 +129,10 @@ def view(request, id):
             if fullop.at_list_level():
                 operations.append(operation)
 
-    return render_to_response('model_explorer/view.html', { 'view' : view,
-                                                            'datatype' : datatype,
-                                                            'contents' : contents,
-                                                            'operations' : operations })
+    return render_to_response('explorer/view.html', { 'view'       : view,
+                                                      'datatype'   : datatype,
+                                                      'contents'   : contents,
+                                                      'operations' : operations })
 
 def datatype(request, viewid, id, operationid=False):
     '''
@@ -174,10 +174,10 @@ def datatype(request, viewid, id, operationid=False):
     # Get the view operations
     operations = Operation().find_by_view(database, view=view.label)
 
-    return render_to_response('model_explorer/datatype.html', { 'cid'      : content.id,
-                                                                'viewid'   : viewid,
-                                                                'datatype' : fulltype,
-                                                                'operations' : operations,
-                                                                'form'     : form,
-                                                                'edit'     : edit,
-                                                                'values'   : values})
+    return render_to_response('explorer/datatype.html', { 'cid'        : content.id,
+                                                          'viewid'     : viewid,
+                                                          'datatype'   : fulltype,
+                                                          'operations' : operations,
+                                                          'form'       : form,
+                                                          'edit'       : edit,
+                                                          'values'     : values})

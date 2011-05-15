@@ -107,8 +107,8 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'LegoERP.model_explorer',
-    'LegoERP.template_tools',
-    'LegoERP.template_tools.templatetags',
+    'LegoERP.explorer',
+    'LegoERP.tags',
+    'LegoERP.tags.templatetags',
     'LegoERP.examples',
 )

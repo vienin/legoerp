@@ -20,7 +20,7 @@
 from django.conf.urls.defaults import *
 
 
-urlpatterns = patterns('LegoERP.model_explorer.views',
+urlpatterns = patterns('LegoERP.explorer.views',
     (r'^operation/(?P<id>\w+)/$','operation'),
     (r'^view/(?P<id>\w+)/$','view'),
     (r'^datatype/(?P<viewid>\w+)/(?P<id>\w+)/$','datatype'),

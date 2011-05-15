@@ -7,7 +7,7 @@ from django.conf.urls.defaults import *
 # admin.autodiscover()
 
 urlpatterns = patterns('LegoERP',
-    (r'^', include('model_explorer.urls')),
+    (r'^', include('explorer.urls')),
 )
 
 urlpatterns += patterns('',
