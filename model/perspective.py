@@ -17,11 +17,11 @@
 #
 # File: perspective.py
 
-from couch import MetaLegoDocument, TextField
+from couch import MetaLegoDocument, TextField, OneToOneField, OneToManyField
 
-from datatype import DataType, DataTypeFieldAdress, DataTypeFieldString
+from datatype import DataType, DataTypeField, DataTypeFieldAdress, DataTypeFieldString
 from datatype import DataTypeFieldFloat, DataTypeFieldInteger, DataTypeFieldRelation
-from operation import UpdateDataOperation, AddDataOperation, DelDataOperation
+from operation import Operation, UpdateDataOperation, AddDataOperation, DelDataOperation
 
 
 class Perspective(MetaLegoDocument):
@@ -39,9 +39,9 @@ class Perspective(MetaLegoDocument):
                   'DataTypeFieldInteger'  : DataTypeFieldInteger,
                   'DataTypeFieldRelation' : DataTypeFieldRelation }
 
-    datatype   = None
-    operations = []
-    datafields = []
+    datatype   = OneToOneField(DataType)
+    operations = OneToManyField(Operation)
+    datafields = OneToManyField(DataTypeField)
 
     def __init__(self, database=None, label=None, **kwords):
         super(Perspective, self).__init__(database, label, **kwords)

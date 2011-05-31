@@ -19,8 +19,8 @@
 
 from django import forms
 
-from couch import MetaLegoDocument, ViewField, TextField, IntegerField
-from datatype import DataType, DataTypeFieldAdress, DataTypeFieldString
+from couch import MetaLegoDocument, ViewField, TextField, IntegerField, OneToOneField, OneToManyField
+from datatype import DataType, DataTypeField, DataTypeFieldAdress, DataTypeFieldString
 from datatype import DataTypeFieldFloat, DataTypeFieldInteger, DataTypeFieldRelation
 
 
@@ -38,7 +38,7 @@ class Operation(MetaLegoDocument):
                   'DataTypeFieldInteger'  : DataTypeFieldInteger,
                   'DataTypeFieldRelation' : DataTypeFieldRelation }
 
-    datatype = None
+    datatype = OneToOneField(DataType)
 
     def __init__(self, database=None, label=None, **kwords):
         super(Operation, self).__init__(database=database,
@@ -70,7 +70,7 @@ class Operation(MetaLegoDocument):
 
 class UpdateDataOperation(Operation):
 
-    updatefields = []
+    updatefields = OneToManyField(DataTypeField)
 
     def __init__(self, database=None, label=None, **kwords):
         super(UpdateDataOperation, self).__init__(database=database,
@@ -83,8 +83,8 @@ class UpdateDataOperation(Operation):
 
 class AddDataOperation(Operation):
 
-    displayedfields = []
-    fixedfields     = []
+    displayedfields = OneToManyField(DataTypeField)
+    fixedfields     = OneToManyField(DataTypeField)
 
     def __init__(self, database=None, label=None, **kwords):
         super(AddDataOperation, self).__init__(database=database,

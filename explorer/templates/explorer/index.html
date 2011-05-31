@@ -66,14 +66,16 @@
         <div id="right">
 
           {% for perspective in perspectives.values %}
-		  {% if perspective.operations %}
+          {% if perspective.operations %}
           <div class="pull-box-container pull-box-510">
             <div class="pull-box-header"><h3>{{ perspective }}</h3></div>
             <div class="pull-box-content">
 
               {% for operation in perspective.operations %}
+			  {% if operation.at_list_level %}
               <div class="button-index" id="new-project-button"><a href="/operation/{{perspective.id}}/{{ operation.id }}" class="">{{ operation }}</a></div>
-              {% endfor %}
+              {% endif %}
+			  {% endfor %}
 
               <div class="clear"></div>
             </div>

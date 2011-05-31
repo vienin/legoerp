@@ -20,7 +20,7 @@
 from couchdb.mapping import *
 
 
-class OneToOneField(Field):
+class OneToOneField(object):
 
     metatype = None
 
@@ -28,7 +28,7 @@ class OneToOneField(Field):
         self.metatype = metatype
 
 
-class OneToManyField(Field):
+class OneToManyField(list):
 
     metatype = None
 
@@ -126,8 +126,9 @@ class MetaLegoDocument(Document):
             for attr in kwords:
                 # kword is a separate document, create/update the separate document,
                 # and add the current document id to its refenreced_in list.
-                if isinstance(getattr(self, attr), list):
+                if isinstance(getattr(self, attr), OneToManyField):
                     setattr(self, attr, [])
+
                 if not isinstance(kwords[attr], list):
                     kwords[attr] = [ kwords[attr] ]
 
@@ -139,12 +140,11 @@ class MetaLegoDocument(Document):
 
                     document.referenced_in[self.metatype][attr].append(self.id)
 
-                    #document.rank = rank
                     document.store(database)
-                    if isinstance(getattr(self, attr), list):
+                    if isinstance(getattr(self, attr), OneToManyField):
                         getattr(self, attr).append(document)
 
-                    else:
+                    elif isinstance(getattr(self, attr), OneToOneField):
                         setattr(self, attr, document)
 
             # Synchronize the views here for instance..
@@ -190,7 +190,6 @@ class MetaLegoDocument(Document):
         options = { 'startkey' : [id], 'endkey' : [id, {}] }
 
         for row in self.by_id(database, **options):
-            print row.key
             id, attr, metatype = row.key
 
             # Build the requested object identified by 'id'

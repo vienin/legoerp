@@ -101,7 +101,7 @@
 	  <div id="sidebar"> 
         <ul class="links navigation">
           {% for operation in perspective.operations %}
-		  {% if operation.at_list_level %}
+          {% if operation.at_list_level %}
           <li class="update_project"><a href="/operation/{{ perspective.id }}/{{ operation.id }}">{{ operation }}</a></li>
 		  {% endif %}
 	      {% endfor %}

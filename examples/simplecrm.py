@@ -40,10 +40,10 @@ model = { DataTypeFieldString : { 'product_name' : { 'label' : u'Nom', },
 
           DataTypeFieldAdress : { 'client_addr' : { 'label' : u'Adresse', }, },
           
-          DataTypeFieldRelation : { 'order_product' : { 'label'    : u'Produit acheté',
-                                                        'relation' : u'Produit' },
-                                    'order_client'  : { 'label'    : u'Client concerné',
-                                                        'relation' : u'Client' },
+          DataTypeFieldRelation : { 'order_product' : { 'label'        : u'Produit acheté',
+                                                        'relationship' : u'Produit' },
+                                    'order_client'  : { 'label'        : u'Client concerné',
+                                                        'relationship' : u'Client' },
                                   },
 
           DataType : { 'product' : { 'label'    : u'Produit',

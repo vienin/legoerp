@@ -17,7 +17,7 @@
 #
 # File: datatype.py
 
-from couch import MetaLegoDocument, LegoDocument, TextField
+from couch import MetaLegoDocument, LegoDocument, TextField, OneToManyField
 
 
 class DataTypeField(MetaLegoDocument):
@@ -65,7 +65,7 @@ class DataTypeFieldInteger(DataTypeField):
 
 class DataTypeFieldRelation(DataTypeField):
 
-    relation = TextField()
+    relationship = TextField()
 
     def __init__(self, database=None, label=None, **kwords):
         super(DataTypeFieldRelation, self).__init__(database=database,
@@ -84,7 +84,7 @@ class DataType(MetaLegoDocument):
                   'DataTypeFieldInteger'  : DataTypeFieldInteger,
                   'DataTypeFieldRelation' : DataTypeFieldRelation }
 
-    fields = []
+    fields = OneToManyField(DataTypeField)
 
     def __init__(self, database=None, label=None, **kwords):
         super(DataType, self).__init__(database=database,
