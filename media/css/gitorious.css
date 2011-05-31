@@ -1100,6 +1100,7 @@ form.button-to {
 	-webkit-box-shadow: 0px 1px 0px #FFF inset;
 	-moz-box-shadow: inset 0px 1px 0px #FFF;
 	border: 1px solid #b5b5b5;
+	background-image: url("../img/book_open.png") !important;
 }
 
 .button.right a {

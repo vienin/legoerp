@@ -108,7 +108,7 @@ model = { DataTypeFieldString : { 'product_name' : { 'label' : u'Nom', },
                                           },
 
                              },
-          
+
           DelDataOperation : { 'delord' : { 'label'    : u'Annuler commande',
                                             'datatype' : (DataType, 'order'),
                                           },

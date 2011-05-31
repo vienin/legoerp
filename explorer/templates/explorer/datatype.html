@@ -96,7 +96,7 @@
  	    <ul class="links navigation">
          {% for operation in perspective.operations %}
 		 {% if not operation.at_list_level %}
-         <li class="update_project"><a href="/datatype/{{ perspective.id }}/{{ content.id }}/{{ operation.id }}/">{{ operation }}</a></li>
+         <li class="{{ operation.css_class }}"><a href="/datatype/{{ perspective.id }}/{{ content.id }}/{{ operation.id }}/">{{ operation }}</a></li>
 	     {% endif %}
 		 {% endfor %}
         </ul>

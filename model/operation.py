@@ -70,6 +70,8 @@ class Operation(MetaLegoDocument):
 
 class UpdateDataOperation(Operation):
 
+    css_class = 'update_project'
+
     updatefields = OneToManyField(DataTypeField)
 
     def __init__(self, database=None, label=None, **kwords):
@@ -82,6 +84,8 @@ class UpdateDataOperation(Operation):
 
 
 class AddDataOperation(Operation):
+
+    css_class = 'new_repository'
 
     displayedfields = OneToManyField(DataTypeField)
     fixedfields     = OneToManyField(DataTypeField)
@@ -96,6 +100,8 @@ class AddDataOperation(Operation):
 
 
 class DelDataOperation(Operation):
+
+    css_class = 'delete_repository'
 
     def __init__(self, database=None, label=None, **kwords):
         super(DelDataOperation, self).__init__(database=database,
