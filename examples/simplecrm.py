@@ -18,99 +18,166 @@
 # File: simplecrm.py
 
 from model.datatype import *
-from model.view import View
+from model.perspective import Perspective
 from model.operation import *
 
 
-model = { DataType : { 'product' : { 'label'    : u'Produit',
-                                     'fields'   : [ StringDataTypeField(u'Nom'),
-                                                  FloatDataTypeField(u'Prix unitaire'),
-                                                  IntegerDataTypeField(u'Quantitée disponible'),
-                                                  FloatDataTypeField(u'Dégagement Co2 (mlg)'), ],
+model = { DataTypeFieldString : { 'product_name' : { 'label' : u'Nom', },
+                                  'client_first' : { 'label' : u'Prénom', },
+                                  'client_last'  : { 'label' : u'Nom', },
+                                  'order_number' : { 'label' : u'Numéro', },
+                                  'cost_title'   : { 'label' : u'Titre', },
+                                },
+
+          DataTypeFieldInteger : { 'product_quan' : { 'label' : u'Quantitée disponible', },
+                                   'order_quanti' : { 'label' : u'Quantitée', },
+                                 },
+
+          DataTypeFieldFloat : { 'product_co2' : { 'label' : u'Dégagement Co2 (mlg)', },
+                                 'product_pri' : { 'label' : u'Prix unitaire', },
+                                 'cost_price'  : { 'label' : u'Montant', },
+                               },
+
+          DataTypeFieldAdress : { 'client_addr' : { 'label' : u'Adresse', }, },
+          
+          DataTypeFieldRelation : { 'order_product' : { 'label'    : u'Produit acheté',
+                                                        'relation' : u'Produit' },
+                                    'order_client'  : { 'label'    : u'Client concerné',
+                                                        'relation' : u'Client' },
+                                  },
+
+          DataType : { 'product' : { 'label'    : u'Produit',
+                                     'fields'   : [ (DataTypeFieldString, 'product_name'),
+                                                    (DataTypeFieldFloat, 'product_pri'),
+                                                    (DataTypeFieldInteger, 'product_quan'),
+                                                    (DataTypeFieldFloat, 'product_co2'), ],
                                    },
 
                         'client' : { 'label'    : u'Client',
-                                     'fields'   : [ StringDataTypeField(u'Prénom'),
-                                                    StringDataTypeField(u'Nom'),
-                                                    AdressDataTypeField(u'Adresse'), ],
+                                     'fields'   : [ (DataTypeFieldString, 'client_first'),
+                                                    (DataTypeFieldString, 'client_last'),
+                                                    (DataTypeFieldAdress, 'client_addr'), ],
                                    },
 
                         'order'  : { 'label'    : u'Commande',
-                                     'fields'   : [ StringDataTypeField(u'Numéro'),
-                                                    RelationDataTypeField(u'Produit acheté', u'Produit'),
-                                                    RelationDataTypeField(u'Client concerné', u'Client'),
-                                                    IntegerDataTypeField(u'Quantitée'), ],
+                                     'fields'   : [ (DataTypeFieldString, 'order_number'),
+                                                    (DataTypeFieldRelation, 'order_product'),
+                                                    (DataTypeFieldRelation, 'order_client'),
+                                                    (DataTypeFieldInteger, 'order_quanti'), ],
                                    },
 
                         'cost'   : { 'label'    : u'Frais',
-                                     'fields'   : [ StringDataTypeField(u'Titre'),
-                                                    FloatDataTypeField(u'Montant'), ],
+                                     'fields'   : [ (DataTypeFieldString, 'cost_title'),
+                                                    (DataTypeFieldFloat, 'cost_price'), ],
                                    },
                      },
+          
+          AddDataOperation : { 'appro' : { 'label'    : u'Approvisionnement',
+                                           'datatype' : (DataType, 'product'),
+                                           'displayedfields' : [ (DataTypeFieldString, 'product_name'),
+                                                                 (DataTypeFieldFloat, 'product_pri'),
+                                                                 (DataTypeFieldInteger, 'product_quan') ],
+                                           'fixedfields'     : [ (DataTypeFieldFloat, 'product_co2'), ]
+                                          },
 
-          View : { 'products' : { 'label'    : u'Liste des produits',
-                                  'datatype' : (DataType, 'product'),
+                               'newcli' : { 'label'    : u'Nouveau client',
+                                            'datatype' : (DataType, 'client'),
+                                            'displayedfields' : [ (DataTypeFieldString, 'client_first'),
+                                                                  (DataTypeFieldString, 'client_last'),
+                                                                  (DataTypeFieldAdress, 'client_addr'), ],
+                                          },
+
+                               'neword' : { 'label'    : u'Nouvelle commande',
+                                            'datatype' : (DataType, 'order'),
+                                            'displayedfields' : [ (DataTypeFieldString, 'order_number'),
+                                                                  (DataTypeFieldRelation, 'order_product'),
+                                                                  (DataTypeFieldRelation, 'order_client'),
+                                                                  (DataTypeFieldInteger, 'order_quanti'), ],
+                                          },
+
+                               'newcos' : { 'label'    : u'Saisir note de frais',
+                                            'datatype' : (DataType, 'cost'),
+                                            'displayedfields' : [ (DataTypeFieldString, 'cost_title'),
+                                                                  (DataTypeFieldFloat, 'cost_price'), ],
+                                          },
+
+                               'newbuy' : { 'label'    : u'Achat de matériel',
+                                            'datatype' : (DataType, 'cost'),
+                                            'displayedfields' : [ (DataTypeFieldString, 'cost_title'),
+                                                                  (DataTypeFieldFloat, 'cost_price'), ],
+                                          },
+
+                             },
+          
+          DelDataOperation : { 'delord' : { 'label'    : u'Annuler commande',
+                                            'datatype' : (DataType, 'order'),
+                                          },
+                             },
+
+          UpdateDataOperation : { 'majpro' : { 'label'    : u'Mettre à jour un produit',
+                                               'datatype' : (DataType, 'product'),
+                                               'updatefields' : [ (DataTypeFieldString, 'product_name'),
+                                                                  (DataTypeFieldFloat, 'product_pri'),
+                                                                  (DataTypeFieldInteger, 'product_quan') ],
+                                             },
+                                 
+                                  'majcli' : { 'label'    : u'Modifier une fiche client',
+                                               'datatype' : (DataType, 'client'),
+                                               'updatefields' : [ (DataTypeFieldString, 'client_first'),
+                                                                  (DataTypeFieldString, 'client_last'),
+                                                                  (DataTypeFieldAdress, 'client_addr'), ],
+                                             },
+
                                 },
 
-                   'clients'  : { 'label'    : u'Liste des clients',
-                                  'datatype' : (DataType, 'client'),
-                                },
-
-                   'orders'   : { 'label'    : u'Liste des commandes',
-                                  'datatype' : (DataType, 'order'),
-                                },
-
-                   'costs'    : { 'label'    : u'Chiffre d\'affaires',
-                                  'datatype' : (DataType, 'cost'),
-                                },
-
-                   'stats'    : { 'label'    : u'Statistiques',
-                                  'datatype' : (DataType, 'cost'),
-                                },
-
-                   'buy'      : { 'label'    : u'Matériel et notes de frais',
-                                  'datatype' : (DataType, 'cost'),
-                                },
-                 },
-
-            Operation : { 'operation_0' : { 'label' : u'Approvisionnement',
-                                            'view'  : (View, 'products'),
-                                            'steps' : [ AddDataOperationStep(), ],
-                                          },
-
-                          'operation_1' : { 'label' : u'Mettre à jour un produit',
-                                            'view'  : (View, 'products'),
-                                            'steps' : [ UpdateDataOperationStep(), ],
-                                          },
-
-                          'operation_2' : { 'label' : u'Nouveau client',
-                                            'view'  : (View, 'clients'),
-                                            'steps' : [ AddDataOperationStep(), ],
-                                          },
-
-                          'operation_3' : { 'label' : u'Mettre à jour client',
-                                            'view'  : (View, 'clients'),
-                                            'steps' : [ UpdateDataOperationStep(), ],
-                                          },
-
-                          'operation_4' : { 'label' : u'Nouvelle commande',
-                                            'view'  : (View, 'orders'),
-                                            'steps' : [ AddDataOperationStep(), ],
-                                          },
-
-                          'operation_5' : { 'label' : u'Annuler commande',
-                                            'view'  : (View, 'orders'),
-                                            'steps' : [ DelDataOperationStep(), ],
-                                          },
-
-                          'operation_6' : { 'label' : u'Achat de matériel',
-                                            'view'  : (View, 'costs'),
-                                            'steps' : [ AddDataOperationStep(), ],
-                                          },
-
-                          'operation_7' : { 'label' : u'Saisir note de frais',
-                                            'view'  : (View, 'costs'),
-                                            'steps' : [ AddDataOperationStep(), ],
-                                          },
-                        }
-        }
+          Perspective : { 'products' : { 'label'    : u'Liste des produits',
+                                         'datatype' : (DataType, 'product'),
+                                         'datafields' : [ (DataTypeFieldString, 'product_name'),
+                                                          (DataTypeFieldFloat, 'product_pri'),
+                                                          (DataTypeFieldInteger, 'product_quan'), ],
+                                         'operations' : [ (AddDataOperation, 'appro'),
+                                                          (UpdateDataOperation, 'majpro'), ]
+                                       },
+        
+                          'clients'  : { 'label'    : u'Liste des clients',
+                                         'datatype' : (DataType, 'client'),
+                                         'datafields' : [ (DataTypeFieldString, 'client_first'),
+                                                          (DataTypeFieldString, 'client_last'),
+                                                          (DataTypeFieldAdress, 'client_addr'), ],
+                                         'operations' : [ (AddDataOperation, 'newcli'),
+                                                          (UpdateDataOperation, 'majcli'), ]
+                                       },
+        
+                          'orders'   : { 'label'    : u'Liste des commandes',
+                                         'datatype' : (DataType, 'order'),
+                                         'datafields' : [ (DataTypeFieldString, 'order_number'),
+                                                          (DataTypeFieldRelation, 'order_product'),
+                                                          (DataTypeFieldRelation, 'order_client'),
+                                                          (DataTypeFieldInteger, 'order_quanti'), ],
+                                         'operations' : [ (AddDataOperation, 'neword'),
+                                                          (DelDataOperation, 'delord'), ]
+                                       },
+        
+                          'costs'    : { 'label'    : u'Chiffre d\'affaires',
+                                         'datatype' : (DataType, 'cost'),
+                                         'datafields' : [ (DataTypeFieldString, 'cost_title'),
+                                                          (DataTypeFieldFloat, 'cost_price'), ],
+                                         'operations' : []
+                                       },
+        
+                          'stats'    : { 'label'    : u'Statistiques',
+                                         'datatype' : (DataType, 'cost'),
+                                         'datafields' : [ (DataTypeFieldString, 'cost_title'),
+                                                          (DataTypeFieldFloat, 'cost_price'), ],
+                                         'operations' : []
+                                       },
+        
+                          'buy'      : { 'label'    : u'Matériel et notes de frais',
+                                         'datatype' : (DataType, 'cost'),
+                                         'datafields' : [ (DataTypeFieldString, 'cost_title'),
+                                                          (DataTypeFieldFloat, 'cost_price'), ],
+                                         'operations' : [ (AddDataOperation, 'newcos'),
+                                                          (AddDataOperation, 'newbuy'), ]
+                                       },
+                          },
+          }

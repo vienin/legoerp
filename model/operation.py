@@ -17,7 +17,11 @@
 #
 # File: operation.py
 
-from couch import *
+from django import forms
+
+from couch import MetaLegoDocument, ViewField, TextField, IntegerField
+from datatype import DataType, DataTypeFieldAdress, DataTypeFieldString
+from datatype import DataTypeFieldFloat, DataTypeFieldInteger, DataTypeFieldRelation
 
 
 class Operation(MetaLegoDocument):
@@ -27,114 +31,106 @@ class Operation(MetaLegoDocument):
     on a single or a set of database documents.
 	"""
 
-    view = TextField()
+    __decls__ = { 'DataType'              : DataType,
+                  'DataTypeFieldAdress'   : DataTypeFieldAdress,
+                  'DataTypeFieldString'   : DataTypeFieldString,
+                  'DataTypeFieldFloat'    : DataTypeFieldFloat,
+                  'DataTypeFieldInteger'  : DataTypeFieldInteger,
+                  'DataTypeFieldRelation' : DataTypeFieldRelation }
 
-    by_view  = ViewField(design='operation',
-                         map_fun='''\
-                   function(doc) {
-                       if (doc.metatype == 'Operation') {
-                           emit(doc.view, doc);
-                       }
-                   }''')
+    datatype = None
 
-    with_steps = ViewField(design='operation',
-                         wrapper=None,
-                         map_fun='''\
-                   function(doc) {
-                       if (doc.metatype == 'Operation') {
-                           emit([doc._id, 0], doc);
-                       } else if (doc.metatype.indexOf('OperationStep') > -1) {
-                           emit([doc.operation, doc.rank], doc);
-                       }
-                   }''')
-
-    steps = None
-
-    def __init__(self, database=None, label=None, view=None, steps=[]):
-        super(Operation, self).__init__()
-
-        self.steps = []
-        if database:
-            self.label = label
-            self.view = view
-            self.store(database)
-
-            rank = 1
-            for step in steps:
-                step.rank = rank
-                step.operation = self.id
-                step.store(database)
-                self.steps.append(step)
-                rank += 1
-
-            self.with_steps.sync(database)
-            self.by_view.sync(database)
-
-    def find(self, database, id=False, steps=False):
-        document = None
-        options  = {}
-        if id:
-            if steps:   options = { 'startkey' : [ id ], 'endkey' : [ id, {} ] }
-            else:       options = { 'key' : [ id, 0 ] }
-
-        for row in self.with_steps(database, **options):
-            if row.value['metatype'] in ('Operation'):
-                if document:
-                    yield document
-
-                document = Operation.wrap(row.value)
-
-            elif 'OperationStep' in row.value['metatype']:
-                document.steps.append(globals()[row.value['metatype']].wrap(row.value))
-
-        if document:
-            yield document
-
-    def find_by_view(self, database, view=False):
-        options  = {}
-        if view:
-            options = { 'key' : view }
-
-        for doc in self.by_view(database, **options):
-            yield doc
+    def __init__(self, database=None, label=None, **kwords):
+        super(Operation, self).__init__(database=database,
+                                        label=label,
+                                        **kwords)
+        
+        if not self.__decls__.has_key('UpdateDataOperation'):
+            self.__decls__['UpdateDataOperation'] = UpdateDataOperation
+            self.__decls__['AddDataOperation'] = AddDataOperation
+            self.__decls__['DelDataOperation'] = DelDataOperation
 
     def at_list_level(self):
-        for step in self.steps:
-            if isinstance(step, AddDataOperationStep):
-                return True
+        if isinstance(self, AddDataOperation):
+            return True
         return False
+    
+    def form(self, fields=None, content=None, post=None):
+        if not fields:
+            fields = self.form_fields()
 
-class OperationStep(MetaLegoDocument):
-    """
-    Single update on databse documents.
-    """
+        options = { 'fields' : fields }
+        if content:
+            options['initial'] = content
+        if post:
+            return OperationForm(post, **options)
 
-    operation = TextField()
-    rank      = IntegerField()
-
-    def __init__(self, label='None'):
-        super(OperationStep, self).__init__()
-
-        if label:   self.label = label
-
-
-class UpdateDataOperationStep(OperationStep):
-    fields = {}
-    values = {}
-
-    def __init__(self, label=None, fields=False, values=False):
-        super(UpdateDataOperationStep, self).__init__(label=label)
-        self.fields = fields
-        self.values = values
+        return OperationForm(**options)
 
 
-class AddDataOperationStep(OperationStep):
+class UpdateDataOperation(Operation):
 
-    def __init__(self, label=None):
-        super(AddDataOperationStep, self).__init__(label=label)
+    updatefields = []
 
-        
-class DelDataOperationStep(OperationStep):
+    def __init__(self, database=None, label=None, **kwords):
+        super(UpdateDataOperation, self).__init__(database=database,
+                                                  label=label,
+                                                  **kwords)
 
-    def __init__(self, label=None):
-        super(DelDataOperationStep, self).__init__(label=label)
+    def form_fields(self):
+        return self.updatefields
+
+
+class AddDataOperation(Operation):
+
+    displayedfields = []
+    fixedfields     = []
+
+    def __init__(self, database=None, label=None, **kwords):
+        super(AddDataOperation, self).__init__(database=database,
+                                               label=label,
+                                               **kwords)
+
+    def form_fields(self):
+        return self.displayedfields
+
+
+class DelDataOperation(Operation):
+
+    def __init__(self, database=None, label=None, **kwords):
+        super(DelDataOperation, self).__init__(database=database,
+                                               label=label,
+                                               **kwords)
+
+    def form_fields(self):
+        return None
+
+
+class OperationForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        fields = kwargs.pop('fields')
+
+        if kwargs.has_key('initial'):
+            initial = kwargs.pop('initial')
+        else:
+            initial = {}
+
+        forms.Form.__init__(self, *args, **kwargs)
+
+        for field in fields:
+            # Beurk ?
+            if (isinstance(field, DataTypeFieldString) or 
+                isinstance(field, DataTypeFieldAdress)):
+                self.fields[field.id] = forms.CharField(label=field.label,
+                                                        initial=initial.get(field.id))
+
+            elif isinstance(field, DataTypeFieldFloat):
+                self.fields[field.id] = forms.FloatField(label=field.label,
+                                                         initial=initial.get(field.id))
+
+            elif isinstance(field, DataTypeFieldInteger):
+                self.fields[field.id] = forms.IntegerField(label=field.label,
+                                                           initial=initial.get(field.id))
+
+            #self.fields[field.id].widget.attrs['disabled'] = 'disabled'

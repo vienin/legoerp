@@ -17,153 +17,83 @@
 #
 # File: datatype.py
 
-from couch import *
+from couch import MetaLegoDocument, LegoDocument, TextField
 
-from django import forms
-
-
-class DataTypeForm(forms.Form):
-
-    def __init__(self, *args, **kwargs):
-        datatype = kwargs.pop('datatype')
-        
-        if kwargs.has_key('initial'):
-            initial = kwargs.pop('initial')
-        else:
-            initial = {}
-
-        forms.Form.__init__(self, *args, **kwargs)
-
-        for field in datatype.fields:
-            # Beurk ?
-            if (isinstance(field, StringDataTypeField) or 
-                isinstance(field, AdressDataTypeField)):
-                self.fields[field.id] = forms.CharField(label=field.label,
-                                                        initial=initial.get(field.id))
-
-            elif isinstance(field, FloatDataTypeField):
-                self.fields[field.id] = forms.FloatField(label=field.label,
-                                                         initial=initial.get(field.id))
-
-            elif isinstance(field, IntegerDataTypeField):
-                self.fields[field.id] = forms.IntegerField(label=field.label,
-                                                           initial=initial.get(field.id))
-
-            #self.fields[field.id].widget.attrs['disabled'] = 'disabled'
-
-class DataType(MetaLegoDocument):
-    """
-    Description of a database document type.
-    """
-
-    with_fields = ViewField(design='datatype',
-                            wrapper=None,
-                            map_fun='''\
-                   function(doc) {
-                       if (doc.metatype == 'DataType') {
-                           emit([doc._id, 0], doc);
-                       } else if (doc.metatype.indexOf('DataTypeField') > -1) {
-                           emit([doc.datatype, doc.rank], doc);
-                       }
-                   }''')
-
-    fields = None
-
-    def __init__(self, database=None, label=None, fields=[]):
-        super(DataType, self).__init__()
-
-        self.fields = []
-        if database:
-            self.label = label
-            self.store(database)
-
-            rank = 1
-            for field in fields:
-                field.rank = rank
-                field.datatype = self.id
-                field.store(database)
-                self.fields.append(field)
-                rank += 1
-
-            # The question ! When synchronize couchdb views ?
-            self.with_fields.sync(database)
-            self.by_id.sync(database)
-
-    def find(self, database, id=False, fields=False):
-        document = None
-        options  = {}
-        if id:
-            if fields:  options = { 'startkey' : [id], 'endkey' : [id, {}] }
-            else:       options = { 'key' : [id, 0] }
-
-        for row in self.with_fields(database, **options):
-            if row.value['metatype'] in ('DataType'):
-                if document:
-                    yield document
-
-                document = DataType.wrap(row.value)
-
-            elif 'DataTypeField' in row.value['metatype']:
-                document.fields.append(globals()[row.value['metatype']].wrap(row.value))
-
-        if document:
-            yield document
-
-    def build(self, database, values):
-        model_document = LegoDocument(self.id)
-        for field in self.fields:
-            if field.id in values.keys():
-                model_document._data[field.id] = values[field.id]
-
-        model_document.store(database)
-        
 
 class DataTypeField(MetaLegoDocument):
     """
     Field of a database document type.
     """
 
-    datatype = TextField()
-    rank     = IntegerField()
-    #default  = None
-
-    def __init__(self, label=None, default=None):
-        super(DataTypeField, self).__init__()
-
-        if label:   self.label = label
-        if default: self.default = default
+    def __init__(self, database=None, label=None, **kwords):
+        super(DataTypeField, self).__init__(database=database,
+                                            label=label,
+                                            **kwords)
 
 
-class AdressDataTypeField(DataTypeField):
+class DataTypeFieldAdress(DataTypeField):
 
-    def __init__(self, label=None, default=None):
-        super(AdressDataTypeField, self).__init__(label=label, default=default)
-
-
-class StringDataTypeField(DataTypeField):
-
-    def __init__(self, label=None, default=None):
-        super(StringDataTypeField, self).__init__(label=label, default=default)
+    def __init__(self, database=None, label=None, **kwords):
+        super(DataTypeFieldAdress, self).__init__(database=database,
+                                                  label=label,
+                                                  **kwords)
 
 
-class FloatDataTypeField(DataTypeField):
+class DataTypeFieldString(DataTypeField):
 
-    def __init__(self, label=None, default=None):
-        super(FloatDataTypeField, self).__init__(label=label, default=default)
-
-
-class IntegerDataTypeField(DataTypeField):
-
-    def __init__(self, label=None, default=None):
-        super(IntegerDataTypeField, self).__init__(label=label, default=default)
+    def __init__(self, database=None, label=None, **kwords):
+        super(DataTypeFieldString, self).__init__(database=database,
+                                                  label=label,
+                                                  **kwords)
 
 
-class RelationDataTypeField(DataTypeField):
+class DataTypeFieldFloat(DataTypeField):
+
+    def __init__(self, database=None, label=None, **kwords):
+        super(DataTypeFieldFloat, self).__init__(database=database,
+                                                 label=label,
+                                                 **kwords)
+
+
+class DataTypeFieldInteger(DataTypeField):
+
+    def __init__(self, database=None, label=None, **kwords):
+        super(DataTypeFieldInteger, self).__init__(database=database,
+                                                   label=label,
+                                                   **kwords)
+
+
+class DataTypeFieldRelation(DataTypeField):
 
     relation = TextField()
 
-    def __init__(self, label=None, relation=None):
-        super(RelationDataTypeField, self).__init__(label=label)
-        if relation:
-            self.relation = relation
+    def __init__(self, database=None, label=None, **kwords):
+        super(DataTypeFieldRelation, self).__init__(database=database,
+                                                    label=label,
+                                                    **kwords)
 
+
+class DataType(MetaLegoDocument):
+    """
+    Description of a database document type.
+    """
+
+    __decls__ = { 'DataTypeFieldAdress'   : DataTypeFieldAdress,
+                  'DataTypeFieldString'   : DataTypeFieldString,
+                  'DataTypeFieldFloat'    : DataTypeFieldFloat,
+                  'DataTypeFieldInteger'  : DataTypeFieldInteger,
+                  'DataTypeFieldRelation' : DataTypeFieldRelation }
+
+    fields = []
+
+    def __init__(self, database=None, label=None, **kwords):
+        super(DataType, self).__init__(database=database,
+                                       label=label,
+                                       **kwords)
+
+    def build(self, database, values):
+        content = LegoDocument(self.id)
+        for fieldid in values:
+            content._data[fieldid] = values[fieldid]
+
+        content.store(database)

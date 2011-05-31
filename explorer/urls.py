@@ -21,8 +21,8 @@ from django.conf.urls.defaults import *
 
 
 urlpatterns = patterns('LegoERP.explorer.views',
-    (r'^operation/(?P<id>\w+)/$','operation'),
-    (r'^view/(?P<id>\w+)/$','view'),
+    (r'^operation/(?P<viewid>\w+)/(?P<id>\w+)/$','operation'),
+    (r'^perspective/(?P<id>\w+)/$','perspective'),
     (r'^datatype/(?P<viewid>\w+)/(?P<id>\w+)/$','datatype'),
     (r'^datatype/(?P<viewid>\w+)/(?P<id>\w+)/(?P<operationid>\w+)/$','datatype'),
     (r'^$','index'), 

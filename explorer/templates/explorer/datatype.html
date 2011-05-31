@@ -31,7 +31,8 @@
     <div id="top-bar">
       <ul id="breadcrumbs">
       	<li class="project"><a href="/">LegoERP</a></li>
-        <li class="repository"><a href="/view/{{ viewid }}">{{ datatype }}</a></li>
+        <li class="tree"><a href="/perspective/{{ perspective.id }}">{{ perspective }}</a></li>
+		<li class="repository"><a href="/datatype/{{ perspective.id }}/{{ content.id }}">{{ content.id }}</a></li>
 	  </ul> 
       <div id="searchbox">
 
@@ -47,9 +48,9 @@
 
     <div id="container" class="">
       <div id="content" class="with_sidebar">  
-	    <h1>{{ datatype }}: Toto</h1>
+	    <h1>{{ datatype }}: {{ content.id }}</h1>
 
-		{% if edit %}
+		{% if operation %}
           {% if form.errors %}
 		  <div class="errorExplanation" id="errorExplanation">
 		    <h2>{{ form.errors|length}} errors prohibited this operation from being processed</h2>
@@ -65,7 +66,7 @@
 		  {% endif %}
 
 		{% endif %}
-		  <form action="/datatype/{{ viewid }}/{{ cid }}/" class="new_project" id="new_project" method="post">
+		  <form action="/datatype/{{ perspective.id }}/{{ content.id }}/{{ operation.id }}/" class="new_project" id="new_project" method="post">
           <ul class="form"> 
             <fieldset>
 	          {% for field in form %}
@@ -75,7 +76,7 @@
 		        {% if field.errors %}</div>{% endif %}
 			    <div>
 		        {% if field.errors %}<div class="fieldWithErrors">{% endif %}
-			      {% if edit %} {{ field }} {% else %} {{ values|hash:forloop.counter0 }} {% endif %}
+			      {% if operation %} {{ field }} {% else %} {{ content|hash:field.name }} {% endif %}
 			    {% if field.errors %}</div>{% endif %}
 			    </div>
 		      </li>
@@ -83,7 +84,7 @@
             </fieldset>
           </ul>
 
-		{% if edit %}
+		{% if operation %}
 		  <fieldset class="submit"> 
             <input id="project_submit" name="commit" type="submit" value="Valider" />
           </fieldset> 
@@ -93,9 +94,11 @@
 
       <div id="sidebar"> 
  	    <ul class="links navigation">
-         {% for operation in operations %}
-         <li class="update_project"><a href="/datatype/{{ viewid }}/{{ cid }}/{{ operation.id }}/">{{ operation }}</a></li>
-	     {% endfor %}
+         {% for operation in perspective.operations %}
+		 {% if not operation.at_list_level %}
+         <li class="update_project"><a href="/datatype/{{ perspective.id }}/{{ content.id }}/{{ operation.id }}/">{{ operation }}</a></li>
+	     {% endif %}
+		 {% endfor %}
         </ul>
       </div>
     </div>
@@ -122,27 +125,5 @@
     </div>
   </div>
 
-
-<!--
-<h1>CouchDB in Django</h1>
-
-<form method="post" action=".">
-<table>
-  <tr>
-    <td> Title for new document </td>
-    <td><input type="text" name="title"></td>
-    <td><input type="submit"></td>
-  </tr>
-</table>
-</form>
-<hr>
-<ol>
-  {% for row in rows %}
-  <li>
-  <a id="title" href="/doc/{{ row }}/">{{ row }}</a>
-  </li>
-  {% endfor %}
-</ol>
--->
 </body>
 </html>

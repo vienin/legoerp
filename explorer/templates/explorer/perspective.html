@@ -30,8 +30,7 @@
     <div id="top-bar">
       <ul id="breadcrumbs">
       	<li class="project"><a href="/">LegoERP</a></li> 
-        <li class="repository"><a href="">{{ datatype }}</a></li>
-		<li class="tree"><a href="">{{ view }}</a></li>
+		<li class="tree"><a href="">{{ perspective }}</a></li>
 	  </ul> 
       <div id="searchbox">
 
@@ -48,7 +47,7 @@
     <div id="container" class="">
       <div id="content" class="with_sidebar">
 
-        <h1>{{ view }}</h1> 
+        <h1>{{ perspective }}</h1> 
  
         <div class="clear"></div> 
         <div id="merge-requests-status-chooser"> 
@@ -72,7 +71,7 @@
         <div id=listing>
         <table class="listing"> 
         <thead>
-  	      {% for field in datatype.fields %}
+  	      {% for field in perspective.datafields %}
           <th>{{ field }}</th> 
 	      {% endfor %}
           <th><!-- 'details' button --></th> 
@@ -87,7 +86,7 @@
               </td>
 		      {% else %}
 		      <td width=10>
-		      <div class="button"><a href="/datatype/{{ view.id }}/{{ value }}">Details</a></div>
+		      <div class="button"><a href="/datatype/{{ perspective.id }}/{{ value }}">Details</a></div>
 		      </td>
 		      {% endif %}
 		    {% endfor %}
@@ -101,8 +100,10 @@
       </div>
 	  <div id="sidebar"> 
         <ul class="links navigation">
-          {% for operation in operations %}
-          <li class="update_project"><a href="/operation/{{ operation.id }}">{{ operation }}</a></li>
+          {% for operation in perspective.operations %}
+		  {% if operation.at_list_level %}
+          <li class="update_project"><a href="/operation/{{ perspective.id }}/{{ operation.id }}">{{ operation }}</a></li>
+		  {% endif %}
 	      {% endfor %}
         </ul>
       </div> 

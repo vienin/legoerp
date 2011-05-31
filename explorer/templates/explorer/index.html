@@ -55,8 +55,8 @@
             <div class="pull-box-header"><h3>Explore</h3></div>
             <div class="pull-box-content">
               <ul class="events inline">
-              	{% for viewid in views.keys %}
-  	            <div class="button-index"><a href="/view/{{ viewid }}/">{{ views|hash:viewid }}</a></div>
+              	{% for perspective in perspectives.values %}
+  	            <div class="button-index"><a href="/perspective/{{ perspective.id }}/">{{ perspective }}</a></div>
                 {% endfor %}
               </ul>
             </div>
@@ -65,18 +65,20 @@
 
         <div id="right">
 
-          {% for viewid in operations.keys %}
+          {% for perspective in perspectives.values %}
+		  {% if perspective.operations %}
           <div class="pull-box-container pull-box-510">
-            <div class="pull-box-header"><h3>{{ views|hash:viewid }}</h3></div>
+            <div class="pull-box-header"><h3>{{ perspective }}</h3></div>
             <div class="pull-box-content">
 
-              {% for operation in operations|hash:viewid %}
-              <div class="button-index" id="new-project-button"><a href="/operation/{{ operation.id }}" class="">{{ operation }}</a></div>
+              {% for operation in perspective.operations %}
+              <div class="button-index" id="new-project-button"><a href="/operation/{{perspective.id}}/{{ operation.id }}" class="">{{ operation }}</a></div>
               {% endfor %}
 
               <div class="clear"></div>
             </div>
           </div>
+		  {% endif %}
           {% endfor %}
 
         </div>
